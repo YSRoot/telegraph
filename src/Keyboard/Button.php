@@ -72,9 +72,9 @@ class Button
     public function toArray(): array
     {
         if (count($this->callbackData) > 0) {
-
             /** @var CallbackQueryDataParserInterface $parser */
             $parser = app(CallbackQueryDataParserInterface::class);
+
             return [
                 'text' => $this->label,
                 'callback_data' => $parser->encode($this->callbackData),

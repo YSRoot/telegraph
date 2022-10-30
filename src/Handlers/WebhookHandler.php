@@ -110,7 +110,7 @@ abstract class WebhookHandler
                 report(TelegramWebhookException::invalidCommand($command));
             }
 
-            $this->chat->html(__('telegraph::errors.invalid_command',))->send();
+            $this->chat->html(__('telegraph::errors.invalid_command', ))->send();
         }
     }
 

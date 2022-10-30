@@ -13,7 +13,6 @@ use DefStudio\Telegraph\DTO\InlineQueryResult;
 use DefStudio\Telegraph\DTO\TelegramUpdate;
 use DefStudio\Telegraph\Exceptions\TelegramUpdatesException;
 use DefStudio\Telegraph\Exceptions\TelegraphException;
-use DefStudio\Telegraph\Facades\CallbackResolver;
 use DefStudio\Telegraph\Facades\Telegraph as TelegraphFacade;
 use DefStudio\Telegraph\Telegraph;
 use Illuminate\Database\Eloquent\Collection;
