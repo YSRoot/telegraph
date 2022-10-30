@@ -48,7 +48,7 @@ abstract class WebhookHandler
         $this->originalKeyboard = Keyboard::make();
     }
 
-    protected function handleCallbackQuery(): void
+    private function handleCallbackQuery(): void
     {
         $this->extractCallbackQueryData();
 
@@ -57,7 +57,7 @@ abstract class WebhookHandler
         }
 
         /** @var string $action */
-        $action = $this->callbackQuery->data()->get('action', '');
+        $action = $this->callbackQuery?->data()->get('action') ?? '';
 
         if (!$this->canHandle($action)) {
             report(TelegramWebhookException::invalidAction($action));
