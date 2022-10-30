@@ -67,8 +67,8 @@ abstract class WebhookHandler
         }
 
         // if callback handle class exist try use it
-        /** @var class-string<Callback> $callbackClass */
         if ($callbackClass = CallbackResolver::callbackClassByName($this->bot->name, $action)) {
+            /** @var class-string<Callback> $callbackClass */
             /** @var Callback $callback */
             $callback = new $callbackClass(
                 $this->bot,

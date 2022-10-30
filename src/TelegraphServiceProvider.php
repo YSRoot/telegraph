@@ -31,9 +31,11 @@ class TelegraphServiceProvider extends PackageServiceProvider
         $this->app->bind('telegraph', fn () => new Telegraph());
 
         $this->app->singleton('callbackResolver', function (): CallbackResolver {
-            return new CallbackResolver(config('telegraph'));
+            /* @phpstan-ignore-next-line */
+            return new CallbackResolver(config('telegraph.bots', []));
         });
 
+        /* @phpstan-ignore-next-line */
         $this->app->bind(CallbackQueryDataParserInterface::class, config('telegraph.callback_parser'));
     }
 }
