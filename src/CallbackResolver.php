@@ -7,9 +7,9 @@ use DefStudio\Telegraph\Exceptions\TelegramWebhookException;
 
 final class CallbackResolver
 {
-    /** @var array<string, class-string<Callback>> $callbacks */
+    /** @var array<string, class-string<Callback>> */
     private array $callbackMap = [];
-    /** @var array<string, class-string<CallbackData>> $callbacks */
+    /** @var array<string, class-string<CallbackData>> */
     private array $callbackDataMap = [];
 
     public function __construct(array $config)
@@ -53,6 +53,7 @@ final class CallbackResolver
             && array_key_exists($name, $this->callbackDataMap[$botName] ?? [])
         ) {
             parse_str($data, $decoded);
+
             return new $this->callbackDataMap[$name]($decoded);
         }
 
