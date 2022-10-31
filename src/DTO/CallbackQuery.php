@@ -4,9 +4,9 @@
 
 namespace DefStudio\Telegraph\DTO;
 
+use DefStudio\Telegraph\Parsers\CallbackQueryDataParserInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class CallbackQuery implements Arrayable
 {
@@ -18,16 +18,16 @@ class CallbackQuery implements Arrayable
 
     private Collection $data;
 
-    private function __construct()
+    final public function __construct()
     {
     }
 
     /**
      * @param array{id:int, from:array<string, mixed>, message?:array<string, mixed>, data?:string} $data
      */
-    public static function fromArray(array $data): CallbackQuery
+    public static function fromArray(array $data): static
     {
-        $callbackQuery = new self();
+        $callbackQuery = new static();
 
         $callbackQuery->id = $data['id'];
 
@@ -39,17 +39,9 @@ class CallbackQuery implements Arrayable
             $callbackQuery->message = Message::fromArray($data['message']);
         }
 
-        $callbackQuery->data = Str::of($data['data'] ?? '')
-            ->explode(';')
-            ->filter()
-            /* @phpstan-ignore-next-line */
-            ->mapWithKeys(function (string $entity) {
-                $entity = explode(':', $entity);
-                $key = $entity[0];
-                $value = $entity[1];
-
-                return [$key => $value];
-            });
+        /** @var CallbackQueryDataParserInterface $parser */
+        $parser = app(CallbackQueryDataParserInterface::class);
+        $callbackQuery->data = $parser->parse($data['data'] ?? '');
 
         return $callbackQuery;
     }

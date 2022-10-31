@@ -2,6 +2,8 @@
 
 namespace DefStudio\Telegraph\Keyboard;
 
+use DefStudio\Telegraph\Parsers\CallbackQueryDataParserInterface;
+
 class Button
 {
     private string $url;
@@ -12,17 +14,17 @@ class Button
 
     private int $width = 0;
 
-    private function __construct(
+    final public function __construct(
         private string $label,
     ) {
     }
 
-    public static function make(string $label): Button
+    public static function make(string $label): static
     {
-        return new self($label);
+        return new static($label);
     }
 
-    public function width(float $percentage): Button
+    public function width(float $percentage): static
     {
         $width = (int)($percentage * 100);
 
@@ -70,9 +72,12 @@ class Button
     public function toArray(): array
     {
         if (count($this->callbackData) > 0) {
+            /** @var CallbackQueryDataParserInterface $parser */
+            $parser = app(CallbackQueryDataParserInterface::class);
+
             return [
                 'text' => $this->label,
-                'callback_data' => implode(';', $this->callbackData),
+                'callback_data' => $parser->encode($this->callbackData),
             ];
         }
 
