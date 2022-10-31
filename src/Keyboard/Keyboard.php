@@ -6,7 +6,6 @@ use DefStudio\Telegraph\Parsers\CallbackQueryDataParserInterface;
 use DefStudio\Telegraph\Proxies\KeyboardButtonProxy;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class Keyboard implements Arrayable
 {
