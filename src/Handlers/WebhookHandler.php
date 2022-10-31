@@ -8,12 +8,14 @@
 
 namespace DefStudio\Telegraph\Handlers;
 
+use DefStudio\Telegraph\Callback;
 use DefStudio\Telegraph\DTO\CallbackQuery;
 use DefStudio\Telegraph\DTO\Chat;
 use DefStudio\Telegraph\DTO\InlineQuery;
 use DefStudio\Telegraph\DTO\Message;
 use DefStudio\Telegraph\DTO\User;
 use DefStudio\Telegraph\Exceptions\TelegramWebhookException;
+use DefStudio\Telegraph\Facades\CallbackResolver;
 use DefStudio\Telegraph\Keyboard\Keyboard;
 use DefStudio\Telegraph\Models\TelegraphBot;
 use DefStudio\Telegraph\Models\TelegraphChat;
@@ -64,13 +66,30 @@ abstract class WebhookHandler
             return;
         }
 
+        // if callback handle class exist try use it
+        if ($callbackClass = CallbackResolver::callbackClassByName($this->bot->name, $action)) {
+            /** @var class-string<Callback> $callbackClass */
+            /** @var Callback $callback */
+            $callback = new $callbackClass(
+                $this->bot,
+                $this->chat,
+                $this->callbackQuery,
+                $this->request,
+            );
+
+            $callback->handle();
+
+            return;
+        }
+
+        //else use default logic
         $this->$action();
     }
 
     private function handleCommand(Stringable $text): void
     {
-        $command = (string) $text->after('/')->before(' ')->before('@');
-        $parameter = (string) $text->after('@')->after(' ');
+        $command = (string)$text->after('/')->before(' ')->before('@');
+        $parameter = (string)$text->after('@')->after(' ');
 
         if (!$this->canHandle($command)) {
             $this->handleUnknownCommand($text);
@@ -84,13 +103,13 @@ abstract class WebhookHandler
     protected function handleUnknownCommand(Stringable $text): void
     {
         if ($this->message?->chat()?->type() === Chat::TYPE_PRIVATE) {
-            $command = (string) $text->after('/')->before(' ')->before('@');
+            $command = (string)$text->after('/')->before(' ')->before('@');
 
             if (config('telegraph.report_unknown_webhook_commands', true)) {
                 report(TelegramWebhookException::invalidCommand($command));
             }
 
-            $this->chat->html(__('telegraph::errors.invalid_command', ))->send();
+            $this->chat->html(__('telegraph::errors.invalid_command'))->send();
         }
     }
 
@@ -134,6 +153,10 @@ abstract class WebhookHandler
             return false;
         }
 
+        if ($this->callbackQuery !== null && CallbackResolver::callbackClassByName($this->bot->name, $action)) {
+            return true;
+        }
+
         if (!method_exists($this, $action)) {
             return false;
         }
@@ -174,7 +197,9 @@ abstract class WebhookHandler
 
         assert($this->callbackQuery !== null);
 
-        $this->messageId = $this->callbackQuery->message()?->id() ?? throw TelegramWebhookException::invalidData('message id missing');
+        $this->messageId = $this->callbackQuery->message()?->id() ?? throw TelegramWebhookException::invalidData(
+            'message id missing'
+        );
 
         $this->callbackQueryId = $this->callbackQuery->id();
 
@@ -270,7 +295,6 @@ abstract class WebhookHandler
 
             return;
         }
-
 
         if ($this->request->has('callback_query')) {
             /* @phpstan-ignore-next-line */

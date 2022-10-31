@@ -7,6 +7,7 @@ use DefStudio\Telegraph\Commands\CreateNewChatCommand;
 use DefStudio\Telegraph\Commands\GetTelegramWebhookDebugInfoCommand;
 use DefStudio\Telegraph\Commands\SetTelegramWebhookCommand;
 use DefStudio\Telegraph\Commands\UnsetTelegramWebhookCommand;
+use DefStudio\Telegraph\Parsers\CallbackQueryDataParserInterface;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -28,5 +29,16 @@ class TelegraphServiceProvider extends PackageServiceProvider
             ->hasTranslations();
 
         $this->app->bind('telegraph', fn () => new Telegraph());
+    }
+
+    public function bootingPackage(): void
+    {
+        $this->app->singleton('callbackResolver', function (): CallbackResolver {
+            /* @phpstan-ignore-next-line */
+            return new CallbackResolver(config('telegraph.bots', []));
+        });
+
+        /* @phpstan-ignore-next-line */
+        $this->app->bind(CallbackQueryDataParserInterface::class, config('telegraph.callback_parser'));
     }
 }
