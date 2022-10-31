@@ -58,6 +58,7 @@ class Validator
             throw FileException::documentSizeExceeded($size);
         }
     }
+
     /**
      * @throws FileException
      */
