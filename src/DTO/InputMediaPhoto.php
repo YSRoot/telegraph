@@ -44,6 +44,6 @@ class InputMediaPhoto extends InputMedia
      */
     protected function validate(): void
     {
-        Validator::validatePhoto($this->path);
+        Validator::validatePhoto($this->contents);
     }
 }
