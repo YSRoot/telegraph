@@ -38,5 +38,4 @@ abstract class InputMedia
     abstract public function toMediaArray(): array;
 
     abstract protected function validate(): void;
-
 }

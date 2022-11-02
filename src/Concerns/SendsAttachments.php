@@ -177,6 +177,7 @@ trait SendsAttachments
                     $attachment = $mediaItem->attachment();
                     $this->files->put($attachment->getName(), $attachment);
                 }
+
                 return $mediaItem->toMediaArray();
             })
             ->all();
