@@ -35,6 +35,10 @@ class Attachment implements Arrayable
 
     public function filename(): string
     {
+        if ($this->contents instanceof StreamInterface || getimagesizefromstring($this->contents)) {
+            return 'temp';
+        }
+
         return $this->filename ?? File::basename($this->contents);
     }
 
