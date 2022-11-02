@@ -6,7 +6,6 @@ use DefStudio\Telegraph\Exceptions\FileException;
 use DefStudio\Telegraph\Exceptions\InputMediaException;
 use DefStudio\Telegraph\Telegraph;
 use DefStudio\Telegraph\Validator;
-use Illuminate\Support\Str;
 
 class InputMediaPhoto extends InputMedia
 {
@@ -15,12 +14,13 @@ class InputMediaPhoto extends InputMedia
      * @throws InputMediaException
      */
     public function __construct(
-        private string $path,
+        string $path,
         ?string $filename = null,
         private ?string $caption = null,
         private ?string $parseMode = null,
     ) {
         $this->type = 'photo';
+        $this->path = $path;
         $this->filename = $filename;
         $this->attachName = $this->generateRandomName();
 
@@ -48,11 +48,9 @@ class InputMediaPhoto extends InputMedia
         return new Attachment($this->path, $this->filename);
     }
 
-    public function local(): bool
-    {
-        return Str::of($this->path)->startsWith('/');
-    }
-
+    /**
+     * @return array<string, string>
+     */
     public function toMediaArray(): array
     {
         return array_filter([
