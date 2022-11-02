@@ -2,23 +2,24 @@
 
 namespace DefStudio\Telegraph\DTO;
 
+use Psr\Http\Message\StreamInterface;
+
 abstract class InputMedia
 {
     protected string $type;
     protected Attachment $attachment;
 
     public function __construct(
-        protected string $path,
+        protected string|StreamInterface $contents,
         ?string $filename = null,
         protected ?string $caption = null,
         protected ?string $parseMode = null,
         bool $preload = false,
     ) {
-        $this->type = 'photo';
-
         $this->validate();
 
-        $this->attachment = new Attachment($this->path, $filename, $preload);
+        $this->type = 'photo';
+        $this->attachment = new Attachment($this->contents, $filename, $preload);
     }
 
     public function attachment(): Attachment

@@ -6,13 +6,14 @@ use GuzzleHttp\Psr7\Utils;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Psr\Http\Message\StreamInterface;
 
 class Attachment implements Arrayable
 {
     private string $name;
 
     public function __construct(
-        private string $path,
+        private string|StreamInterface $contents,
         private string|null $filename = null,
         private bool $preload = false,
     ) {
@@ -21,21 +22,20 @@ class Attachment implements Arrayable
 
     public function contents(): string
     {
-        if ($this->local()) {
-            return File::get($this->path);
+        if ($this->contents instanceof StreamInterface) {
+            return (string) $this->contents;
         }
 
-        return (string) Utils::streamFor($this->path);
+        if ($this->isLocal()) {
+            return File::get($this->contents);
+        }
+
+        return (string) Utils::streamFor($this->contents);
     }
 
     public function filename(): string
     {
-        return $this->filename ?? File::basename($this->path);
-    }
-
-    public function path(): string
-    {
-        return $this->path;
+        return $this->filename ?? File::basename($this->contents);
     }
 
     public function getName(): string
@@ -45,7 +45,11 @@ class Attachment implements Arrayable
 
     public function media(): string
     {
-        return $this->asMultipart() ? $this->attachString() : $this->path;
+        if ($this->asMultipart()) {
+            return $this->attachString();
+        }
+
+        return $this->contents;
     }
 
     public function attachString(): string
@@ -55,7 +59,7 @@ class Attachment implements Arrayable
 
     public function asMultipart(): bool
     {
-        return $this->local() || ($this->remote() && $this->preload);
+        return $this->isLocal() || $this->isStream() || ($this->isRemote() && $this->preload);
     }
 
     /**
@@ -69,14 +73,19 @@ class Attachment implements Arrayable
         ];
     }
 
-    protected function local(): bool
+    protected function isLocal(): bool
     {
-        return Str::of($this->path)->startsWith('/');
+        return Str::of($this->contents)->startsWith('/');
     }
 
-    protected function remote(): bool
+    public function isStream(): bool
     {
-        return (bool) filter_var($this->path, FILTER_VALIDATE_URL);
+        return $this->contents instanceof StreamInterface;
+    }
+
+    protected function isRemote(): bool
+    {
+        return (bool) filter_var($this->contents, FILTER_VALIDATE_URL);
     }
 
     private function generateRandomName(): string
