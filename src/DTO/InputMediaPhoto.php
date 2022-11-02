@@ -18,6 +18,7 @@ class InputMediaPhoto extends InputMedia
         ?string $filename = null,
         private ?string $caption = null,
         private ?string $parseMode = null,
+        private bool $preload = false,
     ) {
         $this->type = 'photo';
         $this->path = $path;
@@ -55,10 +56,15 @@ class InputMediaPhoto extends InputMedia
     {
         return array_filter([
             'type' => $this->type,
-            'media' => $this->local() ? $this->attachString() : $this->path,
+            'media' => $this->asMultipart() ? $this->attachString() : $this->path,
             'caption' => $this->caption,
             'parse_mode' => $this->parseMode,
         ]);
+    }
+
+    public function asMultipart(): bool
+    {
+        return $this->local() || ($this->remote() && $this->preload);
     }
 
     /**
