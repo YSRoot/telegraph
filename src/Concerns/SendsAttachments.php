@@ -8,10 +8,10 @@ namespace DefStudio\Telegraph\Concerns;
 
 use DefStudio\Telegraph\DTO\Attachment;
 use DefStudio\Telegraph\DTO\InputMedia;
-use DefStudio\Telegraph\DTO\InputMediaPhoto;
 use DefStudio\Telegraph\Exceptions\TelegraphException;
 use DefStudio\Telegraph\Telegraph;
 use DefStudio\Telegraph\Validator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 
 /**
@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\File;
 trait SendsAttachments
 {
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      *
      * @return array<string, mixed>
      */
@@ -170,18 +170,16 @@ trait SendsAttachments
 
         $telegraph->data['chat_id'] = $telegraph->getChat()->chat_id;
 
-        $media = [];
-        foreach ($mediaGroup as $mediaItem) {
-            if (!$mediaItem instanceof InputMedia) {
-                continue;
-            }
-
-            if ($mediaItem->asMultipart()) {
-                $attachment = $mediaItem->attachment();
-                $this->files->put($attachment->getName(), $attachment);
-            }
-            $media[] = $mediaItem->toMediaArray();
-        }
+        $media = Collection::wrap($mediaGroup)
+            ->filter(fn (mixed $mediaItem): bool => $mediaItem instanceof InputMedia)
+            ->transform(function (InputMedia $mediaItem): array {
+                if ($mediaItem->asMultipart()) {
+                    $attachment = $mediaItem->attachment();
+                    $this->files->put($attachment->getName(), $attachment);
+                }
+                return $mediaItem->toMediaArray();
+            })
+            ->all();
 
         $telegraph->data['media'] = $media;
 
