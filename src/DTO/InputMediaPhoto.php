@@ -2,46 +2,25 @@
 
 namespace DefStudio\Telegraph\DTO;
 
+use DefStudio\Telegraph\Exceptions\FileException;
+use DefStudio\Telegraph\Exceptions\InputMediaException;
 use DefStudio\Telegraph\Telegraph;
+use DefStudio\Telegraph\Validator;
 
-class InputMediaPhoto
+class InputMediaPhoto extends InputMedia
 {
-    private string $type;
-
-    final public function __construct(
-        private Attachment $attachment,
-        private ?string $caption = null,
-        private ?string $parseMode = null,
-    ) {
-        $this->type = 'photo';
-    }
-
-    public static function make(
-        string $path,
-        bool $preload = false,
-        ?string $filename = null,
-        ?string $caption = null,
-        ?string $parseMode = null,
-    ): static {
-        return new static(
-            new Attachment($path, $filename, $preload),
-            $caption,
-            $parseMode,
-        );
-    }
-
-    public function html(string $caption = null): static
+    public function html(string $message = null): static
     {
         $this->parseMode = Telegraph::PARSE_HTML;
-        $this->caption = $caption;
+        $this->caption = $message;
 
         return $this;
     }
 
-    public function markdown(string $caption = null): static
+    public function markdown(string $message = null): static
     {
         $this->parseMode = Telegraph::PARSE_MARKDOWN;
-        $this->caption = $caption;
+        $this->caption = $message;
 
         return $this;
     }
@@ -53,19 +32,18 @@ class InputMediaPhoto
     {
         return array_filter([
             'type' => $this->type,
-            'media' => $this->attachment->media(),
+            'media' => $this->attachment()->media(),
             'caption' => $this->caption,
             'parse_mode' => $this->parseMode,
         ]);
     }
 
-    public function asMultipart(): bool
+    /**
+     * @throws FileException
+     * @throws InputMediaException
+     */
+    protected function validate(): void
     {
-        return $this->attachment->asMultipart();
-    }
-
-    public function getAttachment(): Attachment
-    {
-        return $this->attachment;
+        Validator::validatePhoto($this->path);
     }
 }

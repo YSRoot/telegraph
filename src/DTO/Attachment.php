@@ -58,6 +58,17 @@ class Attachment implements Arrayable
         return $this->local() || ($this->remote() && $this->preload);
     }
 
+    /**
+     * @return string[]
+     */
+    public function toArray(): array
+    {
+        return [
+            'contents' => $this->contents(),
+            'filename' => $this->filename(),
+        ];
+    }
+
     protected function local(): bool
     {
         return Str::of($this->path)->startsWith('/');
@@ -66,14 +77,6 @@ class Attachment implements Arrayable
     protected function remote(): bool
     {
         return (bool) filter_var($this->path, FILTER_VALIDATE_URL);
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'contents' => $this->contents(),
-            'filename' => $this->filename(),
-        ];
     }
 
     private function generateRandomName(): string

@@ -159,7 +159,7 @@ trait SendsAttachments
     }
 
     /**
-     * @param  array<InputMediaPhoto>  $mediaGroup
+     * @param  array<InputMedia>  $mediaGroup
      * @throws TelegraphException
      */
     public function mediaGroup(array $mediaGroup): Telegraph
@@ -172,12 +172,12 @@ trait SendsAttachments
 
         $media = [];
         foreach ($mediaGroup as $mediaItem) {
-            if (!$mediaItem instanceof InputMediaPhoto) {
+            if (!$mediaItem instanceof InputMedia) {
                 continue;
             }
 
             if ($mediaItem->asMultipart()) {
-                $attachment = $mediaItem->getAttachment();
+                $attachment = $mediaItem->attachment();
                 $this->files->put($attachment->getName(), $attachment);
             }
             $media[] = $mediaItem->toMediaArray();
