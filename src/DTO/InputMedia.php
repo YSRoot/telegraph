@@ -2,38 +2,34 @@
 
 namespace DefStudio\Telegraph\DTO;
 
-use Illuminate\Support\Str;
-
 abstract class InputMedia
 {
     protected string $type;
-    protected string $path;
-    protected ?string $filename;
-    protected string $attachName;
+    protected Attachment $attachment;
 
-    public function getAttachName(): string
-    {
-        return $this->attachName;
+    public function __construct(
+        protected string $path,
+        ?string $filename = null,
+        protected ?string $caption = null,
+        protected ?string $parseMode = null,
+        bool $preload = false,
+    ) {
+        $this->type = 'photo';
+
+        $this->validate();
+
+        $this->attachment = new Attachment($this->path, $filename, $preload);
     }
 
-    protected function attachString(): string
+    public function attachment(): Attachment
     {
-        return 'attach://' . $this->getAttachName();
+        return $this->attachment;
     }
 
-    protected function local(): bool
+    public function asMultipart(): bool
     {
-        return Str::of($this->path)->startsWith('/');
+        return $this->attachment()->asMultipart();
     }
-
-    protected function remote(): bool
-    {
-        return (bool) filter_var($this->path, FILTER_VALIDATE_URL);
-    }
-
-    abstract public function asMultipart(): bool;
-
-    abstract public function toAttachment(): Attachment;
 
     /**
      * @return array<string, string>
@@ -42,8 +38,4 @@ abstract class InputMedia
 
     abstract protected function validate(): void;
 
-    protected function generateRandomName(): string
-    {
-        return substr(md5(uniqid((string) $this->filename, true)), 0, 10);
-    }
 }
