@@ -63,7 +63,10 @@ class Attachment implements Arrayable
 
     public function asMultipart(): bool
     {
-        return $this->isLocal() || $this->isStream() || ($this->isRemote() && $this->preload);
+        return $this->isLocal()
+            || $this->isStream()
+            || getimagesizefromstring($this->contents)
+            || ($this->isRemote() && $this->preload);
     }
 
     /**
