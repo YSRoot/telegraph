@@ -21,15 +21,17 @@ abstract class InputMedia
         return 'attach://' . $this->getAttachName();
     }
 
-    public function local(): bool
+    protected function local(): bool
     {
         return Str::of($this->path)->startsWith('/');
     }
 
-    public function isRemote(): bool
+    protected function remote(): bool
     {
         return (bool) filter_var($this->path, FILTER_VALIDATE_URL);
     }
+
+    abstract public function asMultipart(): bool;
 
     abstract public function toAttachment(): Attachment;
 

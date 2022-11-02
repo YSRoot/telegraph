@@ -175,7 +175,7 @@ trait SendsAttachments
                 continue;
             }
 
-            if ($mediaItem->local() || $mediaItem->isRemote()) {
+            if ($mediaItem->asMultipart()) {
                 $this->files->put($mediaItem->getAttachName(), $mediaItem->toAttachment());
             }
             $media[] = $mediaItem->toMediaArray();
