@@ -2,51 +2,48 @@
 
 namespace DefStudio\Telegraph\DTO;
 
-use DefStudio\Telegraph\Exceptions\FileException;
-use DefStudio\Telegraph\Exceptions\InputMediaException;
 use DefStudio\Telegraph\Telegraph;
-use DefStudio\Telegraph\Validator;
 
-class InputMediaPhoto extends InputMedia
+class InputMediaPhoto
 {
-    /**
-     * @throws FileException
-     * @throws InputMediaException
-     */
-    public function __construct(
-        string $path,
-        ?string $filename = null,
+    private string $type;
+
+    final public function __construct(
+        private Attachment $attachment,
         private ?string $caption = null,
         private ?string $parseMode = null,
-        private bool $preload = false,
     ) {
         $this->type = 'photo';
-        $this->path = $path;
-        $this->filename = $filename;
-        $this->attachName = $this->generateRandomName();
-
-        $this->validate();
     }
 
-    public function html(string $message = null): static
+    public static function make(
+        string $path,
+        bool $preload = false,
+        ?string $filename = null,
+        ?string $caption = null,
+        ?string $parseMode = null,
+    ): static {
+        return new static(
+            new Attachment($path, $filename, $preload),
+            $caption,
+            $parseMode,
+        );
+    }
+
+    public function html(string $caption = null): static
     {
         $this->parseMode = Telegraph::PARSE_HTML;
-        $this->caption = $message;
+        $this->caption = $caption;
 
         return $this;
     }
 
-    public function markdown(string $message = null): static
+    public function markdown(string $caption = null): static
     {
         $this->parseMode = Telegraph::PARSE_MARKDOWN;
-        $this->caption = $message;
+        $this->caption = $caption;
 
         return $this;
-    }
-
-    public function toAttachment(): Attachment
-    {
-        return new Attachment($this->path, $this->filename);
     }
 
     /**
@@ -56,7 +53,7 @@ class InputMediaPhoto extends InputMedia
     {
         return array_filter([
             'type' => $this->type,
-            'media' => $this->asMultipart() ? $this->attachString() : $this->path,
+            'media' => $this->attachment->media(),
             'caption' => $this->caption,
             'parse_mode' => $this->parseMode,
         ]);
@@ -64,15 +61,11 @@ class InputMediaPhoto extends InputMedia
 
     public function asMultipart(): bool
     {
-        return $this->local() || ($this->remote() && $this->preload);
+        return $this->attachment->asMultipart();
     }
 
-    /**
-     * @throws FileException
-     * @throws InputMediaException
-     */
-    protected function validate(): void
+    public function getAttachment(): Attachment
     {
-        Validator::validatePhoto($this->path);
+        return $this->attachment;
     }
 }

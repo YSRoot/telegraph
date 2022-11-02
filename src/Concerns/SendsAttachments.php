@@ -8,6 +8,7 @@ namespace DefStudio\Telegraph\Concerns;
 
 use DefStudio\Telegraph\DTO\Attachment;
 use DefStudio\Telegraph\DTO\InputMedia;
+use DefStudio\Telegraph\DTO\InputMediaPhoto;
 use DefStudio\Telegraph\Exceptions\TelegraphException;
 use DefStudio\Telegraph\Telegraph;
 use DefStudio\Telegraph\Validator;
@@ -158,7 +159,7 @@ trait SendsAttachments
     }
 
     /**
-     * @param  array<InputMedia>  $mediaGroup
+     * @param  array<InputMediaPhoto>  $mediaGroup
      * @throws TelegraphException
      */
     public function mediaGroup(array $mediaGroup): Telegraph
@@ -171,12 +172,13 @@ trait SendsAttachments
 
         $media = [];
         foreach ($mediaGroup as $mediaItem) {
-            if (!$mediaItem instanceof InputMedia) {
+            if (!$mediaItem instanceof InputMediaPhoto) {
                 continue;
             }
 
             if ($mediaItem->asMultipart()) {
-                $this->files->put($mediaItem->getAttachName(), $mediaItem->toAttachment());
+                $attachment = $mediaItem->getAttachment();
+                $this->files->put($attachment->getName(), $attachment);
             }
             $media[] = $mediaItem->toMediaArray();
         }
