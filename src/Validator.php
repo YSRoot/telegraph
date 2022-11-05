@@ -16,7 +16,7 @@ class Validator
      */
     public static function validatePhoto(string|StreamInterface $contents): void
     {
-        if (getimagesizefromstring($contents) || $contents instanceof StreamInterface) {
+        if ($contents instanceof StreamInterface) {
             return;
         }
 

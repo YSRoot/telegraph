@@ -172,7 +172,7 @@ trait SendsAttachments
 
         $media = Collection::wrap($mediaGroup)
             ->filter(fn (mixed $mediaItem): bool => $mediaItem instanceof InputMedia)
-            ->transform(function (InputMedia $mediaItem): array {
+            ->map(function (InputMedia $mediaItem): array {
                 if ($mediaItem->asMultipart()) {
                     $attachment = $mediaItem->attachment();
                     $this->files->put($attachment->getName(), $attachment);

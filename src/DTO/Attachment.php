@@ -30,16 +30,23 @@ class Attachment implements Arrayable
             return File::get($this->contents);
         }
 
-        return (string) Utils::streamFor($this->contents);
+        return (string) Utils::streamFor(Utils::tryFopen($this->contents, 'r'));
     }
 
     public function filename(): string
     {
-        if ($this->contents instanceof StreamInterface || getimagesizefromstring($this->contents)) {
-            return 'temp';
+        if ($this->contents instanceof StreamInterface) {
+            /** @var array<string, string>|null $metadata */
+            $metadata = $this->contents->getMetadata();
+
+            return basename($metadata['uri'] ?? 'temp');
         }
 
-        return $this->filename ?? File::basename($this->contents);
+        if ($this->isLocal()) {
+            $this->filename ??= File::basename($this->contents);
+        }
+
+        return $this->filename ?? basename($this->contents);
     }
 
     public function getName(): string
@@ -63,10 +70,7 @@ class Attachment implements Arrayable
 
     public function asMultipart(): bool
     {
-        return $this->isLocal()
-            || $this->isStream()
-            || getimagesizefromstring($this->contents)
-            || ($this->isRemote() && $this->preload);
+        return $this->isLocal() || $this->isStream() || ($this->isRemote() && $this->preload);
     }
 
     /**
