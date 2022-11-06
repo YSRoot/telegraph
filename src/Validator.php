@@ -6,7 +6,6 @@ use DefStudio\Telegraph\Exceptions\FileException;
 use DefStudio\Telegraph\Exceptions\InputMediaException;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use Psr\Http\Message\StreamInterface;
 
 class Validator
 {
@@ -14,9 +13,9 @@ class Validator
      * @throws FileException
      * @throws InputMediaException
      */
-    public static function validatePhoto(string|StreamInterface $contents): void
+    public static function validatePhoto(string $contents): void
     {
-        if ($contents instanceof StreamInterface) {
+        if (getimagesizefromstring($contents)) {
             return;
         }
 

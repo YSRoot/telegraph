@@ -13,7 +13,7 @@ class Attachment implements Arrayable
     private string $name;
 
     public function __construct(
-        private string|StreamInterface $contents,
+        private string $contents,
         private string|null $filename = null,
         private bool $preload = false,
     ) {
@@ -22,31 +22,28 @@ class Attachment implements Arrayable
 
     public function contents(): string
     {
-        if ($this->contents instanceof StreamInterface) {
-            return (string) $this->contents;
-        }
-
         if ($this->isLocal()) {
             return File::get($this->contents);
         }
 
-        return (string) Utils::streamFor(Utils::tryFopen($this->contents, 'r'));
-    }
-
-    public function filename(): string
-    {
-        if ($this->contents instanceof StreamInterface) {
-            /** @var array<string, string>|null $metadata */
-            $metadata = $this->contents->getMetadata();
-
-            return basename($metadata['uri'] ?? 'temp');
+        if ($this->isRemote() && $this->preload) {
+            return (string) Utils::streamFor(Utils::tryFopen($this->contents, 'r'));
         }
 
+        return $this->contents;
+    }
+
+    public function filename(): ?string
+    {
         if ($this->isLocal()) {
             $this->filename ??= File::basename($this->contents);
         }
 
-        return $this->filename ?? basename($this->contents);
+        if ($this->isRemote()) {
+            $this->filename ??= basename($this->contents);
+        }
+
+        return $this->filename;
     }
 
     public function getName(): string
@@ -70,7 +67,9 @@ class Attachment implements Arrayable
 
     public function asMultipart(): bool
     {
-        return $this->isLocal() || $this->isStream() || ($this->isRemote() && $this->preload);
+        return $this->isLocal()
+            || ($this->isRemote() && $this->preload)
+            || !($this->isLocal() || $this->isRemote());
     }
 
     /**

@@ -2,15 +2,13 @@
 
 namespace DefStudio\Telegraph\DTO;
 
-use Psr\Http\Message\StreamInterface;
-
 abstract class InputMedia
 {
     protected string $type;
     protected Attachment $attachment;
 
     public function __construct(
-        protected string|StreamInterface $contents,
+        protected string $contents,
         ?string $filename = null,
         protected ?string $caption = null,
         protected ?string $parseMode = null,
