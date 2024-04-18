@@ -15,6 +15,7 @@ use Illuminate\Support\Collection;
 class Message implements Arrayable
 {
     private int $id;
+    private int $threadId;
 
     private CarbonInterface $date;
     private ?CarbonInterface $editDate = null;
@@ -45,6 +46,7 @@ class Message implements Arrayable
     private ?Location $location = null;
     private ?Contact $contact = null;
     private ?Voice $voice = null;
+    private ?ForumTopic $forumTopic = null;
 
     private function __construct()
     {
@@ -54,6 +56,7 @@ class Message implements Arrayable
     /**
      * @param array{
      *     message_id: int,
+     *     message_thread_id: int,
      *     date: int,
      *     edit_date?: int,
      *     text?: string,
@@ -75,6 +78,7 @@ class Message implements Arrayable
      *     new_chat_members?: array<string, mixed>,
      *     left_chat_member?: array<string, mixed>,
      *     web_app_data?: array<string, mixed>,
+     *     forum_topic_created?: array<string, mixed>,
      *  } $data
      */
     public static function fromArray(array $data): Message
@@ -82,6 +86,7 @@ class Message implements Arrayable
         $message = new self();
 
         $message->id = $data['message_id'];
+        $message->threadId = $data['message_thread_id'];
 
         $message->date = Carbon::createFromTimestamp($data['date']);
 
@@ -96,6 +101,11 @@ class Message implements Arrayable
         if (isset($data['reply_to_message'])) {
             /* @phpstan-ignore-next-line */
             $message->replyToMessage = Message::fromArray($data['reply_to_message']);
+        }
+
+        if(isset($data['forum_topic_created'])) {
+            /* @phpstan-ignore-next-line */
+            $message->forumTopic = ForumTopic::fromArray($data['forum_topic_created']);
         }
 
         if (isset($data['from'])) {
@@ -186,6 +196,11 @@ class Message implements Arrayable
         return $this->id;
     }
 
+    public function threadId(): int
+    {
+        return $this->threadId;
+    }
+
     public function date(): CarbonInterface
     {
         return $this->date;
@@ -194,6 +209,11 @@ class Message implements Arrayable
     public function editDate(): ?CarbonInterface
     {
         return $this->editDate;
+    }
+
+    public function forumTopic(): ?ForumTopic
+    {
+        return $this->forumTopic;
     }
 
     public function text(): string
@@ -296,6 +316,7 @@ class Message implements Arrayable
     {
         return array_filter([
             'id' => $this->id,
+            'message_thread_id' => $this->threadId,
             'date' => $this->date->toISOString(),
             'edit_date' => $this->editDate?->toISOString(),
             'text' => $this->text,
@@ -316,6 +337,7 @@ class Message implements Arrayable
             'new_chat_members' => $this->newChatMembers->toArray(),
             'left_chat_member' => $this->leftChatMember,
             'web_app_data' => $this->webAppData,
+            'forum_topic_created' => $this->forumTopic?->toArray(),
         ], fn ($value) => $value !== null);
     }
 }
