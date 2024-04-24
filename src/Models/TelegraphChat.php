@@ -127,6 +127,11 @@ class TelegraphChat extends Model implements Storable
         return TelegraphFacade::chat($this)->html($message);
     }
 
+    public function sendToForumTopic(int $threadId): Telegraph
+    {
+        return TelegraphFacade::chat($this)->sendToForumTopic($threadId);
+    }
+
     public function markdown(string $message): Telegraph
     {
         return TelegraphFacade::chat($this)->markdown($message);
@@ -360,6 +365,11 @@ class TelegraphChat extends Model implements Storable
     public function setMenuButton(): SetChatMenuButtonPayload
     {
         return TelegraphFacade::chat($this)->setChatMenuButton();
+    }
+
+    public function createForumTopic(string $name, int $iconColor = null, int $iconCustomEmojiId = null): Telegraph
+    {
+        return TelegraphFacade::chat($this)->createForumTopic($name, $iconColor, $iconCustomEmojiId);
     }
 
     public function copyMessage(TelegraphChat|int $fromChat, int $messageId): Telegraph
